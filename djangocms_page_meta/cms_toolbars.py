@@ -79,7 +79,11 @@ class PageToolbarMeta(CMSToolbar):
                 meta_menu.add_modal_item(PAGE_META_ITEM_TITLE, url=url, disabled=not_edit_mode, position=position)
             # Title tags
             site_id = self.page.node.site_id
-            titles = self.page.title_set.filter(language__in=get_language_list(site_id))
+            language_list = get_language_list(site_id)
+            title_queryset = getattr(self.page, "title_set", None)
+            if title_queryset is None:
+                title_queryset = self.page.pagecontent_set
+            titles = title_queryset.filter(language__in=language_list)
 
             title_extensions = {
                 t.extended_object_id: t
