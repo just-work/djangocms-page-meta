@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("cms", "0003_auto_20140926_2347"),
+        ("cms", "0032_remove_title_to_pagecontent"),
         ("filer", "0001_initial"),
     ]
 
@@ -166,7 +166,7 @@ class Migration(migrations.Migration):
                     "gplus_description",
                     models.CharField(default=b"", max_length=400, verbose_name="Google+ Description", blank=True),
                 ),
-                ("extended_object", models.OneToOneField(editable=False, to="cms.Title", on_delete=models.CASCADE)),
+                ("extended_object", models.OneToOneField(editable=False, to="cms.PageContent", on_delete=models.CASCADE)),
                 (
                     "image",
                     filer.fields.file.FilerFileField(
