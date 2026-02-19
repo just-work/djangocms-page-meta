@@ -1,8 +1,18 @@
 import ast
 
-from cms.extensions import PageExtension, TitleExtension
+from cms.extensions import PageExtension
 from cms.extensions.extension_pool import extension_pool
-from cms.models import Page, Title
+from cms.models import Page
+
+try:
+    from cms.extensions import TitleExtension
+except ImportError:
+    from cms.extensions.models import PageContentExtension as TitleExtension
+
+try:
+    from cms.models import Title
+except ImportError:
+    from cms.models import PageContent as Title
 from django.conf import settings
 from django.core.cache import cache
 from django.db import models
