@@ -177,7 +177,8 @@ class ToolbarTest(BaseTest):
         )
         url_change = False
         url_add = False
-        for title in page1.title_set.all():
+        title_queryset = getattr(page1, "title_set", None) or page1.pagecontent_set
+        for title in title_queryset.all():
             language = get_language_object(title.language)
             titlemeta_menu = meta_menu.find_items(ModalItem, name="{}...".format(language["name"]))
             self.assertEqual(len(titlemeta_menu), 1)
