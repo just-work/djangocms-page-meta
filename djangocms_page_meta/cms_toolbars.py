@@ -24,8 +24,11 @@ PAGE_META_DEFAULT_META_IMAGE_TITLE = _("Default meta image")
 @toolbar_pool.register
 class PageToolbarMeta(CMSToolbar):
     def populate(self):
-        # always use draft if we have a page
+        # django CMS <5: get_page_draft returns the draft page.
+        # django CMS 5 (with versioning): API is removed and may return None.
         self.page = get_page_draft(self.request.current_page)
+        if not self.page:
+            self.page = self.request.current_page
         if not self.page:
             # Nothing to do
             return
