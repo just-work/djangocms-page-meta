@@ -3,6 +3,8 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import get_language_from_request
 from meta import settings as meta_settings
 
+from .compat import get_page_title_obj
+
 
 def get_cache_key(page, language):
     """
@@ -39,9 +41,12 @@ def get_page_meta(page, language):
     meta = cache.get(meta_key)
     if not meta:
         meta = Meta()
-        title = page.get_title_obj(language)
+        title = get_page_title_obj(page, language)
         default_meta_image_obj = DefaultMetaImage.objects.first()
         default_meta_image = default_meta_image_obj.image if default_meta_image_obj else None
+        publication_date = getattr(page, "publication_date", None)
+        publication_end_date = getattr(page, "publication_end_date", None)
+        changed_date = getattr(page, "changed_date", None)
         meta.extra_custom_props = []
 
         meta.title = page.get_page_title(language)
@@ -51,7 +56,13 @@ def get_page_meta(page, language):
         if title.meta_description:
             meta.description = title.meta_description.strip()
         try:
-            titlemeta = title.titlemeta
+            titlemeta = (
+                TitleMeta.objects.filter(extended_object__page=page, extended_object__language=language)
+                .order_by("-pk")
+                .first()
+            ) or getattr(title, "titlemeta", None)
+            if titlemeta is None:
+                raise TitleMeta.DoesNotExist
             if titlemeta.description:
                 meta.description = titlemeta.description.strip()
             if titlemeta.keywords:
@@ -64,7 +75,7 @@ def get_page_meta(page, language):
             if not meta.twitter_description:
                 meta.twitter_description = meta.description
             if titlemeta.image:
-                meta.image = title.titlemeta.image.canonical_url or title.titlemeta.image.url
+                meta.image = titlemeta.image.canonical_url or titlemeta.image.url
             meta.schemaorg_description = titlemeta.schemaorg_description.strip()
             if not meta.schemaorg_description:
                 meta.schemaorg_description = meta.description
@@ -94,8 +105,8 @@ def get_page_meta(page, language):
             "twitter_site": meta_settings.get_setting("TWITTER_SITE"),
             "twitter_author": meta_settings.get_setting("TWITTER_AUTHOR"),
             "schemaorg_type": meta_settings.get_setting("SCHEMAORG_TYPE"),
-            "schemaorg_datePublished": page.publication_date.isoformat() if page.publication_date else None,
-            "schemaorg_dateModified": page.changed_date.isoformat() if page.changed_date else None,
+            "schemaorg_datePublished": publication_date.isoformat() if publication_date else None,
+            "schemaorg_dateModified": changed_date.isoformat() if changed_date else None,
         }
         try:
             pagemeta = page.pagemeta
@@ -109,12 +120,12 @@ def get_page_meta(page, language):
             meta.twitter_author = pagemeta.twitter_author
             meta.schemaorg_type = pagemeta.schemaorg_type
             meta.robots = pagemeta.robots_list
-            if page.publication_date:
-                meta.published_time = page.publication_date.isoformat()
-            if page.changed_date:
-                meta.modified_time = page.changed_date.isoformat()
-            if page.publication_end_date:
-                meta.expiration_time = page.publication_end_date.isoformat()
+            if publication_date:
+                meta.published_time = publication_date.isoformat()
+            if changed_date:
+                meta.modified_time = changed_date.isoformat()
+            if publication_end_date:
+                meta.expiration_time = publication_end_date.isoformat()
             if meta.og_type == "article":
                 meta.og_publisher = pagemeta.og_publisher
                 meta.og_author_url = pagemeta.og_author_url

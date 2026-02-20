@@ -1,0 +1,1 @@
+Fix django CMS 5 meta compatibility by using the new page content API in runtime metadata resolution, and align CI/tox to the Django 5 + CMS 5 support matrix.
