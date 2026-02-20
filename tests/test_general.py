@@ -151,9 +151,9 @@ class PageMetaUtilsTest(BaseTest):
         page1, page2 = self.get_pages()
         page_ext = PageTags.objects.create(extended_object=page1)
         page_ext.tags.add(*tags1)
-        title_ext = TitleTags.objects.create(extended_object=page1.get_title_obj("en"))
+        title_ext = TitleTags.objects.create(extended_object=self.get_title_obj(page1, "en"))
         title_ext.tags.add(*tags2)
-        title_ext = TitleTags.objects.create(extended_object=page2.get_title_obj("en"))
+        title_ext = TitleTags.objects.create(extended_object=self.get_title_obj(page2, "en"))
         title_ext.tags.add(*tags2)
 
         for page in (page1, page2):
@@ -166,10 +166,10 @@ class PageMetaUtilsTest(BaseTest):
             page.reload()
 
         for lang in self.languages:
-            page1.publish(lang)
-            page2.publish(lang)
-        page1 = page1.get_public_object()
-        page2 = page2.get_public_object()
+            self.publish_page(page1, lang)
+            self.publish_page(page2, lang)
+        page1 = self.get_public_page(page1)
+        page2 = self.get_public_page(page2)
 
         meta1 = get_page_meta(page1, "en")
         meta2 = get_page_meta(page2, "en")
@@ -182,7 +182,7 @@ class PageMetaUtilsTest(BaseTest):
         page1, __ = self.get_pages()
         page_meta = models.PageMeta.objects.create(extended_object=page1)
         page_meta.save()
-        title_meta = models.TitleMeta.objects.create(extended_object=page1.get_title_obj("en"))
+        title_meta = models.TitleMeta.objects.create(extended_object=self.get_title_obj(page1, "en"))
         title_meta.save()
 
         models.GenericMetaAttribute.objects.create(page=page_meta, attribute="custom", name="attr", value="foo")
@@ -203,20 +203,20 @@ class PageMetaUtilsTest(BaseTest):
         """
         page1, __ = self.get_pages()
         page_meta = models.PageMeta.objects.create(extended_object=page1)
-        title_meta = models.TitleMeta.objects.create(extended_object=page1.get_title_obj("en"))
+        title_meta = models.TitleMeta.objects.create(extended_object=self.get_title_obj(page1, "en"))
         models.GenericMetaAttribute.objects.create(page=page_meta, attribute="custom", name="attr", value="foo")
         models.GenericMetaAttribute.objects.create(title=title_meta, attribute="custom", name="attr", value="bar")
 
-        page1.publish("en")
+        self.publish_page(page1, "en")
         page_meta.extra.first().attribute = "new"
         page_meta.extra.first().save()
         title_meta.extra.first().attribute = "new"
         title_meta.extra.first().save()
 
-        page1.publish("en")
-        public = page1.get_public_object()
+        self.publish_page(page1, "en")
+        public = self.get_public_page(page1)
         page_meta = models.PageMeta.objects.get(extended_object=public)
-        title_meta = models.TitleMeta.objects.get(extended_object=public.get_title_obj("en"))
+        title_meta = models.TitleMeta.objects.get(extended_object=self.get_title_obj(public, "en"))
         self.assertEqual(page_meta.extra.count(), 1)
         self.assertEqual(title_meta.extra.count(), 1)
 
@@ -226,7 +226,7 @@ class PageMetaUtilsTest(BaseTest):
         """
         page1, __ = self.get_pages()
         page_meta = models.PageMeta.objects.create(extended_object=page1)
-        title_meta = models.TitleMeta.objects.create(extended_object=page1.get_title_obj("en"))
+        title_meta = models.TitleMeta.objects.create(extended_object=self.get_title_obj(page1, "en"))
         default_meta_image = models.DefaultMetaImage.objects.first()
         page_attr = models.GenericMetaAttribute.objects.create(
             page=page_meta, attribute="custom", name="attr", value="foo"
@@ -236,7 +236,7 @@ class PageMetaUtilsTest(BaseTest):
         )
 
         self.assertEqual(str(page_meta), f"Page Meta for {page1}")
-        self.assertEqual(str(title_meta), f"Title Meta for {page1.get_title_obj('en')}")
+        self.assertEqual(str(title_meta), f"Title Meta for {self.get_title_obj(page1, 'en')}")
         self.assertEqual(str(default_meta_image), f"{default_meta_image.pk}")
         self.assertEqual(str(page_attr), f"Attribute {page_attr.name} for {page_meta}")
         self.assertEqual(str(title_attr), f"Attribute {title_attr.name} for {title_meta}")
@@ -258,7 +258,7 @@ class PageMetaUtilsTest(BaseTest):
         """
         page1, __ = self.get_pages()
         page_meta = models.PageMeta.objects.create(extended_object=page1)
-        title_meta = models.TitleMeta.objects.create(extended_object=page1.get_title_obj("en"))
+        title_meta = models.TitleMeta.objects.create(extended_object=self.get_title_obj(page1, "en"))
 
         # cache objects
         for language in page1.get_languages():
@@ -299,7 +299,7 @@ class PageMetaUtilsTest(BaseTest):
         """
         page1, __ = self.get_pages()
         page_meta = models.PageMeta.objects.create(extended_object=page1)
-        title_meta = models.TitleMeta.objects.create(extended_object=page1.get_title_obj("en"))
+        title_meta = models.TitleMeta.objects.create(extended_object=self.get_title_obj(page1, "en"))
 
         # cache objects - cache keys must be pre calculated as the page will not exist anymore when running the
         # asserts

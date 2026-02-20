@@ -36,7 +36,7 @@ class AdminPageTest(BaseTest):
         Test that the returned form has been modified by the meta patch
         """
         page1, _page2 = self.get_pages()
-        title = page1.get_title_obj("en")
+        title = self.get_title_obj(page1, "en")
         title.meta_description = "something"
         title.save()
 

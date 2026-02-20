@@ -18,14 +18,14 @@ class BaseTest(BaseTestCase):
     page_data = {}
     _pages_data = (
         {
-            "en": {"title": "page one", "template": "page_meta.html", "publish": True},
-            "fr-fr": {"title": "page un", "publish": True},
-            "it": {"title": "pagina uno", "publish": True},
+            "en": {"title": "page one", "template": "page_meta.html", "publish": False},
+            "fr-fr": {"title": "page un", "publish": False},
+            "it": {"title": "pagina uno", "publish": False},
         },
         {
-            "en": {"title": "page two", "template": "page_meta.html", "publish": True},
-            "fr-fr": {"title": "page deux", "publish": True},
-            "it": {"title": "pagina due", "publish": True},
+            "en": {"title": "page two", "template": "page_meta.html", "publish": False},
+            "fr-fr": {"title": "page deux", "publish": False},
+            "it": {"title": "pagina due", "publish": False},
         },
     )
     title_data = {
@@ -57,6 +57,33 @@ class BaseTest(BaseTestCase):
     }
     robots_data_single = {"robots": "['noindex']"}
     robots_data_multiple = {"robots": "['none', 'noimageindex', 'noarchive']"}
+
+    @staticmethod
+    def get_title_obj(page, language, fallback=False):
+        if hasattr(page, "get_content_obj"):
+            return page.get_content_obj(language=language, fallback=fallback)
+        try:
+            return page.get_title_obj(language, fallback=fallback)
+        except TypeError:
+            return page.get_title_obj(language)
+
+    @staticmethod
+    def publish_page(page, language):
+        if hasattr(page, "publish"):
+            return page.publish(language)
+        return page
+
+    @staticmethod
+    def get_public_page(page):
+        if hasattr(page, "get_public_object"):
+            return page.get_public_object()
+        return page
+
+    @staticmethod
+    def get_draft_page(page):
+        if hasattr(page, "get_draft_object"):
+            return page.get_draft_object()
+        return page
 
     def setUp(self):
         super().setUp()
