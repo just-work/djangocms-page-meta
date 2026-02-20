@@ -56,7 +56,13 @@ def get_page_meta(page, language):
         if title.meta_description:
             meta.description = title.meta_description.strip()
         try:
-            titlemeta = title.titlemeta
+            titlemeta = (
+                TitleMeta.objects.filter(extended_object__page=page, extended_object__language=language)
+                .order_by("-pk")
+                .first()
+            ) or getattr(title, "titlemeta", None)
+            if titlemeta is None:
+                raise TitleMeta.DoesNotExist
             if titlemeta.description:
                 meta.description = titlemeta.description.strip()
             if titlemeta.keywords:
@@ -69,7 +75,7 @@ def get_page_meta(page, language):
             if not meta.twitter_description:
                 meta.twitter_description = meta.description
             if titlemeta.image:
-                meta.image = title.titlemeta.image.canonical_url or title.titlemeta.image.url
+                meta.image = titlemeta.image.canonical_url or titlemeta.image.url
             meta.schemaorg_description = titlemeta.schemaorg_description.strip()
             if not meta.schemaorg_description:
                 meta.schemaorg_description = meta.description
