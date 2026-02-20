@@ -1,5 +1,6 @@
--e .[docs]
+-e .
 coverage>5
 coveralls>2
 mock>=1.0.1
 django-app-helper>=2.0.0
+django-treebeard<5
