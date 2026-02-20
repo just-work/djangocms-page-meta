@@ -152,7 +152,7 @@ class ToolbarTest(BaseTest):
 
         page1, __ = self.get_pages()
         page_ext = PageMeta.objects.create(extended_object=page1)
-        title_meta = TitleMeta.objects.create(extended_object=page1.get_title_obj("en"))
+        title_meta = TitleMeta.objects.create(extended_object=self.get_title_obj(page1, "en"))
         default_meta_image = DefaultMetaImage.objects.first()
         request = self.get_page_request(page1, self.user, "/", edit=True)
         toolbar = CMSToolbar(request)
