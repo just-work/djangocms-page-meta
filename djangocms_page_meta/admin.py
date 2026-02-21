@@ -13,6 +13,7 @@ from django.contrib.admin.utils import flatten_fieldsets
 from django.core.exceptions import FieldError
 from django.utils.translation import gettext_lazy as _
 
+from .compat import get_page_title_obj
 from .forms import GenericAttributeInlineForm, PageMetaAdminForm, TitleMetaAdminForm
 from .models import DefaultMetaImage, GenericMetaAttribute, PageMeta, TitleMeta
 
@@ -115,10 +116,7 @@ def get_form(self, request, obj=None, **kwargs):
             has_meta_description = False
         if not has_meta_description:
             try:
-                if hasattr(obj, "get_content_obj"):
-                    title_obj = obj.get_content_obj(language=language, fallback=True)
-                else:
-                    title_obj = obj.get_title_obj(language)
+                title_obj = get_page_title_obj(obj, language)
                 has_meta_description = bool(getattr(title_obj, "meta_description", ""))
             except Exception:
                 has_meta_description = False
