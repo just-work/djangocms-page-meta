@@ -56,11 +56,13 @@ def get_page_meta(page, language):
         if title.meta_description:
             meta.description = title.meta_description.strip()
         try:
-            titlemeta = (
-                TitleMeta.objects.filter(extended_object__page=page, extended_object__language=language)
-                .order_by("-pk")
-                .first()
-            ) or getattr(title, "titlemeta", None)
+            titlemeta = getattr(title, "titlemeta", None)
+            if titlemeta is None:
+                titlemeta = (
+                    TitleMeta.objects.filter(extended_object__page=page, extended_object__language=language)
+                    .order_by("-pk")
+                    .first()
+                )
             if titlemeta is None:
                 raise TitleMeta.DoesNotExist
             if titlemeta.description:
